@@ -1,5 +1,7 @@
 # EECS 440 C++ Style Formatter
-[Linux/WSL binary download](https://github.com/sqd/eecs440-format/releases/download/v0.0.1/clang-format-440)
+[Linux/WSL download](https://github.com/sqd/eecs440-format/releases/download/v0.0.1/clang-format-440)
+
+[Windows download](https://github.com/sqd/eecs440-format/releases/download/v0.0.1/clang-format-440.exe)
 #### Short usage: `./clang-format-440 --style=EECS440 -i file1.cpp file2.cpp`
 
 #### - Why should I use this formatter instead of astyle or clang-format?

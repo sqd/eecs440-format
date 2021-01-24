@@ -1,5 +1,5 @@
 # EECS 440 C++ Style Formatter
-[Linux binary download](https://github.com/sqd/eecs440-format/releases/download/v0.0.1/clang-format-440)
+[Linux/WSL binary download](https://github.com/sqd/eecs440-format/releases/download/v0.0.1/clang-format-440)
 #### Short usage: `./clang-format-440 --style=EECS440 -i file1.cpp file2.cpp`
 
 #### - Why should I use this formatter instead of astyle or clang-format?
@@ -12,7 +12,7 @@
 #### - Longer usage:
 - Because this tool is modified from clang-format, you could do whatever you would clang-format.
 - To apply EECS 440 style, use the option `--style=EECS440`. Alternatively, in your .clang-format config, use `BasedOnStyle: EECS440`
-- All options of the original clang-format are kept. Some might not take effect while EECS 440 style is used.
+- All options of the original clang-format are kept. Some might not take effect while EECS 440 style is in use.
 
 #### - Help wanted
 - Compile a Mac version! I don't have a Mac.

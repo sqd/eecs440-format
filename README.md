@@ -1,6 +1,6 @@
 # EECS 440 C++ Style Formatter
-
-#### Short usage: `clang-format-440 --style="{BasedOnStyle: EECS440}" -i file1.cpp file2.cpp`
+[Linux binary download](https://github.com/sqd/eecs440-format/releases/download/v0.0.1/clang-format-440)
+#### Short usage: `./clang-format-440 --style="{BasedOnStyle: EECS440}" -i file1.cpp file2.cpp`
 
 #### - Why should I use this formatter instead of astyle or clang-format?
 - clang-format: doesn't really work because of some bizzare styling choices of the stylesheet.

@@ -11,7 +11,7 @@
 
 #### - Longer usage:
 - Because this tool is modified from clang-format, you could do whatever you would clang-format.
-- To apply EECS 440 style, use the option `--style="{BasedOnStyle: EECS440}"`. Alternatively, in your .clang-format config, use `BasedOnStyle: EECS440`
+- To apply EECS 440 style, use the option `--style=EECS440`. Alternatively, in your .clang-format config, use `BasedOnStyle: EECS440`
 - All options of the original clang-format are kept. Some might not take effect while EECS 440 style is used.
 
 #### - Help wanted

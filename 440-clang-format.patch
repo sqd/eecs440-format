@@ -20,7 +20,7 @@ index 3549ec9ee..81a00bb8c 100755
  FormatStyle getNoStyle();
  
 diff --git a/clang/lib/Format/Format.cpp b/clang/lib/Format/Format.cpp
-index 0d277a646..aac5301cc 100644
+index 0d277a646..6cbc45a50 100644
 --- a/clang/lib/Format/Format.cpp
 +++ b/clang/lib/Format/Format.cpp
 @@ -184,6 +184,7 @@ template <> struct ScalarEnumerationTraits<FormatStyle::BraceBreakingStyle> {
@@ -31,7 +31,7 @@ index 0d277a646..aac5301cc 100644
      IO.enumCase(Value, "GNU", FormatStyle::BS_GNU);
      IO.enumCase(Value, "WebKit", FormatStyle::BS_WebKit);
      IO.enumCase(Value, "Custom", FormatStyle::BS_Custom);
-@@ -773,6 +774,25 @@ static FormatStyle expandPresets(const FormatStyle &Style) {
+@@ -773,6 +774,26 @@ static FormatStyle expandPresets(const FormatStyle &Style) {
      Expanded.BraceWrapping.BeforeElse = true;
      Expanded.BraceWrapping.BeforeLambdaBody = true;
      break;
@@ -53,11 +53,12 @@ index 0d277a646..aac5301cc 100644
 +    Expanded.BraceWrapping.SplitEmptyFunction = true;
 +    Expanded.BraceWrapping.SplitEmptyRecord = true;
 +    Expanded.BraceWrapping.SplitEmptyNamespace = true;
++    Expanded.IndentCaseLabels = true;
 +    break;
    case FormatStyle::BS_GNU:
      Expanded.BraceWrapping = {
          /*AfterCaseLabel=*/true,
-@@ -1241,12 +1261,35 @@ FormatStyle getMicrosoftStyle(FormatStyle::LanguageKind Language) {
+@@ -1241,12 +1262,35 @@ FormatStyle getMicrosoftStyle(FormatStyle::LanguageKind Language) {
    return Style;
  }
  
@@ -98,7 +99,7 @@ index 0d277a646..aac5301cc 100644
  }
  
  bool getPredefinedStyle(StringRef Name, FormatStyle::LanguageKind Language,
-@@ -1267,6 +1310,8 @@ bool getPredefinedStyle(StringRef Name, FormatStyle::LanguageKind Language,
+@@ -1267,6 +1311,8 @@ bool getPredefinedStyle(StringRef Name, FormatStyle::LanguageKind Language,
      *Style = getMicrosoftStyle(Language);
    } else if (Name.equals_lower("none")) {
      *Style = getNoStyle();
@@ -983,10 +984,19 @@ index 537710029..d98d2363b 100644
    bool mustBreakBefore(const AnnotatedLine &Line, const FormatToken &Right);
  
 diff --git a/clang/lib/Format/UnwrappedLineFormatter.cpp b/clang/lib/Format/UnwrappedLineFormatter.cpp
-index 22f27a668..e05cdb869 100644
+index 22f27a668..7a7505c3f 100644
 --- a/clang/lib/Format/UnwrappedLineFormatter.cpp
 +++ b/clang/lib/Format/UnwrappedLineFormatter.cpp
-@@ -98,6 +98,14 @@ private:
+@@ -61,6 +61,8 @@ public:
+     } else {
+       IndentForLevel.resize(Line.Level + 1);
+       Indent = getIndent(IndentForLevel, Line.Level);
++      if (Style.BreakBeforeBraces == FormatStyle::BS_EECS440)
++        Indent += Line.ClassLevel * Style.IndentWidth;
+     }
+     if (static_cast<int>(Indent) + Offset >= 0)
+       Indent += Offset;
+@@ -98,6 +100,14 @@ private:
      if (Style.Language == FormatStyle::LK_Java ||
          Style.Language == FormatStyle::LK_JavaScript || Style.isCSharp())
        return 0;
@@ -1001,46 +1011,76 @@ index 22f27a668..e05cdb869 100644
      if (RootToken.isAccessSpecifier(false) ||
          RootToken.isObjCAccessSpecifier() ||
          (RootToken.isOneOf(Keywords.kw_signals, Keywords.kw_qsignals) &&
-@@ -1235,6 +1243,15 @@ void UnwrappedLineFormatter::formatFirstToken(
+@@ -1061,7 +1071,6 @@ unsigned UnwrappedLineFormatter::format(
+     int AdditionalIndent, bool FixBadIndentation, unsigned FirstStartColumn,
+     unsigned NextStartColumn, unsigned LastStartColumn) {
+   LineJoiner Joiner(Style, Keywords, Lines);
+-
+   // Try to look up already computed penalty in DryRun-mode.
+   std::pair<const SmallVectorImpl<AnnotatedLine *> *, unsigned> CacheKey(
+       &Lines, AdditionalIndent);
+@@ -1235,6 +1244,11 @@ void UnwrappedLineFormatter::formatFirstToken(
        Indent += Style.IndentWidth;
    }
  
-+  // EECS 440 mode
 +  if (Style.BreakBeforeBraces == FormatStyle::BS_EECS440) {
-+    if (RootToken.isOneOf(tok::l_brace, tok::r_brace, tok::kw_case,
-+                          tok::kw_default) &&
-+        !Line.ClassLevel)
++    if (RootToken.isOneOf(tok::l_brace, tok::r_brace))
 +      Indent += Style.IndentWidth;
-+    Indent += Line.ClassLevel * Style.IndentWidth;
 +  }
 +
    // Preprocessor directives get indented before the hash only if specified
    if (Style.IndentPPDirectives != FormatStyle::PPDIS_BeforeHash &&
        (Line.Type == LT_PreprocessorDirective ||
 diff --git a/clang/lib/Format/UnwrappedLineParser.cpp b/clang/lib/Format/UnwrappedLineParser.cpp
-index a37386425..ade2ae0bf 100644
+index a37386425..d59f0dfa8 100644
 --- a/clang/lib/Format/UnwrappedLineParser.cpp
 +++ b/clang/lib/Format/UnwrappedLineParser.cpp
-@@ -2533,13 +2533,17 @@ void UnwrappedLineParser::parseRecord(bool ParseAsExpr) {
+@@ -580,7 +580,7 @@ size_t UnwrappedLineParser::computePPHash() const {
+ }
+ 
+ void UnwrappedLineParser::parseBlock(bool MustBeDeclaration, bool AddLevel,
+-                                     bool MunchSemi) {
++                                     bool MunchSemi, bool IntoClass) {
+   assert(FormatTok->isOneOf(tok::l_brace, TT_MacroBlockBegin) &&
+          "'{' or macro block token expected");
+   const bool MacroBlock = FormatTok->is(TT_MacroBlockBegin);
+@@ -597,6 +597,8 @@ void UnwrappedLineParser::parseBlock(bool MustBeDeclaration, bool AddLevel,
+   size_t NbPreprocessorDirectives =
+       CurrentLines == &Lines ? PreprocessorDirectives.size() : 0;
+   addUnwrappedLine();
++  if (IntoClass)
++    ClassLevel++;
+   size_t OpeningLineIndex =
+       CurrentLines->empty()
+           ? (UnwrappedLine::kInvalidIndex)
+@@ -2533,13 +2535,16 @@ void UnwrappedLineParser::parseRecord(bool ParseAsExpr) {
    }
    if (FormatTok->Tok.is(tok::l_brace)) {
      if (ParseAsExpr) {
-+      Line->ClassLevel++;
++      ClassLevel++;
        parseChildBlock();
-+      Line->ClassLevel--;
++      ClassLevel--;
      } else {
        if (ShouldBreakBeforeBrace(Style, InitialToken))
          addUnwrappedLine();
  
-+      Line->ClassLevel++;
        parseBlock(/*MustBeDeclaration=*/true, /*AddLevel=*/true,
-                  /*MunchSemi=*/false);
-+      Line->ClassLevel--;
+-                 /*MunchSemi=*/false);
++                 /*MunchSemi=*/false, /*IntoClass=*/true);
++      ClassLevel--;
      }
    }
    // There is no addUnwrappedLine() here so that we fall through to parsing a
+@@ -2777,6 +2782,7 @@ void UnwrappedLineParser::addUnwrappedLine() {
+     if (CurrentLines == &Lines)
+       printDebugInfo(*Line);
+   });
++  Line->ClassLevel = ClassLevel;
+   CurrentLines->push_back(std::move(*Line));
+   Line->Tokens.clear();
+   Line->MatchingOpeningBlockLineIndex = UnwrappedLine::kInvalidIndex;
 diff --git a/clang/lib/Format/UnwrappedLineParser.h b/clang/lib/Format/UnwrappedLineParser.h
-index 8b3aa4c84..3d8501d5c 100644
+index 8b3aa4c84..1c39b94ee 100644
 --- a/clang/lib/Format/UnwrappedLineParser.h
 +++ b/clang/lib/Format/UnwrappedLineParser.h
 @@ -43,6 +43,9 @@ struct UnwrappedLine {
@@ -1048,12 +1088,30 @@ index 8b3aa4c84..3d8501d5c 100644
    unsigned Level;
  
 +  /// Level of nested classes
-+  int ClassLevel;
++  int ClassLevel = 0;
 +
    /// Whether this \c UnwrappedLine is part of a preprocessor directive.
    bool InPPDirective;
  
-@@ -294,7 +297,7 @@ struct UnwrappedLineNode {
+@@ -86,7 +89,7 @@ private:
+   void parseFile();
+   void parseLevel(bool HasOpeningBrace);
+   void parseBlock(bool MustBeDeclaration, bool AddLevel = true,
+-                  bool MunchSemi = true);
++                  bool MunchSemi = true, bool IntoClass = false);
+   void parseChildBlock();
+   void parsePPDirective();
+   void parsePPDefine();
+@@ -281,6 +284,8 @@ private:
+   // does not start at the beginning of the file.
+   unsigned FirstStartColumn;
+ 
++  int ClassLevel = 0;
++
+   friend class ScopedLineState;
+   friend class CompoundStatementIndenter;
+ };
+@@ -294,7 +299,7 @@ struct UnwrappedLineNode {
  };
  
  inline UnwrappedLine::UnwrappedLine()

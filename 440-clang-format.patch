@@ -1,7 +1,7 @@
-diff --git a/clang/include/clang/Format/Format.h b/clang/include/clang/Format/Format.h
+diff --git clang/include/clang/Format/Format.h clang/include/clang/Format/Format.h
 index 3549ec9ee..81a00bb8c 100755
---- a/clang/include/clang/Format/Format.h
-+++ b/clang/include/clang/Format/Format.h
+--- clang/include/clang/Format/Format.h
++++ clang/include/clang/Format/Format.h
 @@ -862,6 +862,7 @@ struct FormatStyle {
      /// \endcode
      BS_WebKit,
@@ -19,10 +19,10 @@ index 3549ec9ee..81a00bb8c 100755
  /// Returns style indicating formatting should be not applied at all.
  FormatStyle getNoStyle();
  
-diff --git a/clang/lib/Format/Format.cpp b/clang/lib/Format/Format.cpp
+diff --git clang/lib/Format/Format.cpp clang/lib/Format/Format.cpp
 index 0d277a646..6cbc45a50 100644
---- a/clang/lib/Format/Format.cpp
-+++ b/clang/lib/Format/Format.cpp
+--- clang/lib/Format/Format.cpp
++++ clang/lib/Format/Format.cpp
 @@ -184,6 +184,7 @@ template <> struct ScalarEnumerationTraits<FormatStyle::BraceBreakingStyle> {
      IO.enumCase(Value, "Stroustrup", FormatStyle::BS_Stroustrup);
      IO.enumCase(Value, "Allman", FormatStyle::BS_Allman);
@@ -108,10 +108,10 @@ index 0d277a646..6cbc45a50 100644
    } else {
      return false;
    }
-diff --git a/clang/lib/Format/TokenAnnotator.cpp b/clang/lib/Format/TokenAnnotator.cpp
+diff --git clang/lib/Format/TokenAnnotator.cpp clang/lib/Format/TokenAnnotator.cpp
 index 914c05f72..51c7828f3 100644
---- a/clang/lib/Format/TokenAnnotator.cpp
-+++ b/clang/lib/Format/TokenAnnotator.cpp
+--- clang/lib/Format/TokenAnnotator.cpp
++++ clang/lib/Format/TokenAnnotator.cpp
 @@ -2460,9 +2460,9 @@ void TokenAnnotator::calculateFormattingInformation(AnnotatedLine &Line) {
            }
          }
@@ -950,10 +950,10 @@ index 914c05f72..51c7828f3 100644
  }
  
  // Returns 'true' if 'Tok' is a brace we'd want to break before in Allman style.
-diff --git a/clang/lib/Format/TokenAnnotator.h b/clang/lib/Format/TokenAnnotator.h
+diff --git clang/lib/Format/TokenAnnotator.h clang/lib/Format/TokenAnnotator.h
 index 537710029..d98d2363b 100644
---- a/clang/lib/Format/TokenAnnotator.h
-+++ b/clang/lib/Format/TokenAnnotator.h
+--- clang/lib/Format/TokenAnnotator.h
++++ clang/lib/Format/TokenAnnotator.h
 @@ -38,6 +38,7 @@ class AnnotatedLine {
  public:
    AnnotatedLine(const UnwrappedLine &Line)
@@ -983,10 +983,10 @@ index 537710029..d98d2363b 100644
  
    bool mustBreakBefore(const AnnotatedLine &Line, const FormatToken &Right);
  
-diff --git a/clang/lib/Format/UnwrappedLineFormatter.cpp b/clang/lib/Format/UnwrappedLineFormatter.cpp
+diff --git clang/lib/Format/UnwrappedLineFormatter.cpp clang/lib/Format/UnwrappedLineFormatter.cpp
 index 22f27a668..7a7505c3f 100644
---- a/clang/lib/Format/UnwrappedLineFormatter.cpp
-+++ b/clang/lib/Format/UnwrappedLineFormatter.cpp
+--- clang/lib/Format/UnwrappedLineFormatter.cpp
++++ clang/lib/Format/UnwrappedLineFormatter.cpp
 @@ -61,6 +61,8 @@ public:
      } else {
        IndentForLevel.resize(Line.Level + 1);
@@ -1031,10 +1031,10 @@ index 22f27a668..7a7505c3f 100644
    // Preprocessor directives get indented before the hash only if specified
    if (Style.IndentPPDirectives != FormatStyle::PPDIS_BeforeHash &&
        (Line.Type == LT_PreprocessorDirective ||
-diff --git a/clang/lib/Format/UnwrappedLineParser.cpp b/clang/lib/Format/UnwrappedLineParser.cpp
+diff --git clang/lib/Format/UnwrappedLineParser.cpp clang/lib/Format/UnwrappedLineParser.cpp
 index a37386425..d59f0dfa8 100644
---- a/clang/lib/Format/UnwrappedLineParser.cpp
-+++ b/clang/lib/Format/UnwrappedLineParser.cpp
+--- clang/lib/Format/UnwrappedLineParser.cpp
++++ clang/lib/Format/UnwrappedLineParser.cpp
 @@ -580,7 +580,7 @@ size_t UnwrappedLineParser::computePPHash() const {
  }
  
@@ -1079,10 +1079,10 @@ index a37386425..d59f0dfa8 100644
    CurrentLines->push_back(std::move(*Line));
    Line->Tokens.clear();
    Line->MatchingOpeningBlockLineIndex = UnwrappedLine::kInvalidIndex;
-diff --git a/clang/lib/Format/UnwrappedLineParser.h b/clang/lib/Format/UnwrappedLineParser.h
+diff --git clang/lib/Format/UnwrappedLineParser.h clang/lib/Format/UnwrappedLineParser.h
 index 8b3aa4c84..1c39b94ee 100644
---- a/clang/lib/Format/UnwrappedLineParser.h
-+++ b/clang/lib/Format/UnwrappedLineParser.h
+--- clang/lib/Format/UnwrappedLineParser.h
++++ clang/lib/Format/UnwrappedLineParser.h
 @@ -43,6 +43,9 @@ struct UnwrappedLine {
    /// The indent level of the \c UnwrappedLine.
    unsigned Level;
@@ -1120,10 +1120,10 @@ index 8b3aa4c84..1c39b94ee 100644
        MatchingOpeningBlockLineIndex(kInvalidIndex) {}
  
  } // end namespace format
-diff --git a/clang/tools/clang-format/ClangFormat.cpp b/clang/tools/clang-format/ClangFormat.cpp
+diff --git clang/tools/clang-format/ClangFormat.cpp clang/tools/clang-format/ClangFormat.cpp
 index aa40bab52..3dbcf1f67 100644
---- a/clang/tools/clang-format/ClangFormat.cpp
-+++ b/clang/tools/clang-format/ClangFormat.cpp
+--- clang/tools/clang-format/ClangFormat.cpp
++++ clang/tools/clang-format/ClangFormat.cpp
 @@ -484,7 +484,14 @@ int main(int argc, const char **argv) {
    cl::SetVersionPrinter(PrintVersion);
    cl::ParseCommandLineOptions(
